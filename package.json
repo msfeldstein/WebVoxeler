@@ -1,0 +1,19 @@
+{
+  "name": "voxeler",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "budo index.js -o -l -- -t glslify",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Michael Feldstein",
+  "license": "ISC",
+  "dependencies": {
+    "@msfeldstein/full-screen-canvas": "^1.0.1",
+    "budo": "^9.4.1",
+    "glslify": "^6.0.1",
+    "three": "^0.83.0",
+    "three-vive-controller": "^1.4.0"
+  }
+}
