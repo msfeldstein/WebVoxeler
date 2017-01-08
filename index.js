@@ -3,6 +3,7 @@ var canvas = require("@msfeldstein/full-screen-canvas")()
 var ViveController = require('three-vive-controller')(THREE)
 require('./THREE.VRControls')
 require('./THREE.VREffect')
+window.TWEEN = require('tween.js')
 var VoxelGrid = require('./VoxelGrid')
 var WEBVR = require('./WebVR')
 var app = require('./renderer')(canvas)
@@ -33,16 +34,18 @@ if ( navigator.getVRDisplays ) {
 
 
 grid = new VoxelGrid({
-  gridSize: .4,
+  gridSize: .2,
   scene: scene,
   controllers: [controller1, controller2]
 })
 
-var animate = function() {
+var animate = function(time) {
+  time = Date.now()
   effect.requestAnimationFrame(animate)
+  TWEEN.update()
   controls.update()
   grid.update()
   effect.render(scene, camera)
 
 }
-animate()
+effect.requestAnimationFrame(animate)

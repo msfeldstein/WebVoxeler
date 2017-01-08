@@ -1,5 +1,6 @@
 const Voxel = require('./Voxel')
 const StretchGesture = require('./gestures/stretch')
+
 class VoxelGrid {
   constructor(params) {
     this.pivot = new THREE.Object3D()
@@ -28,14 +29,30 @@ class VoxelGrid {
   }
 
   _setupController(controller) {
-    this._newVoxel(controller)
+    // this._newVoxel(controller)
     controller.on(controller.TriggerClicked, this._clicked.bind(this, controller))
     controller.cursor = new THREE.Mesh(
-      new THREE.SphereBufferGeometry(.01, 5, 5),
-      new THREE.MeshPhongMaterial({color: 0xff0000})
+      new THREE.SphereBufferGeometry(.01, 4, 4),
+      new THREE.MeshBasicMaterial({color: 0xff0000})
     )
     controller.add(controller.cursor)
     controller.cursor.position.z = -0.2
+    controller.selectedPosition = new THREE.Vector3()
+    controller.previousSelectedPosition = new THREE.Vector3()
+
+    // Have a few ghost voxels so that we can have fading trails as you move around
+    controller.ghostQueue = [
+      new Voxel(this.gridSize, true),
+      new Voxel(this.gridSize, true),
+      new Voxel(this.gridSize, true),
+      new Voxel(this.gridSize, true),
+      new Voxel(this.gridSize, true),
+      new Voxel(this.gridSize, true),
+      new Voxel(this.gridSize, true),
+    ]
+    controller.ghostQueue.forEach((ghost) => this.container.add(ghost.object3D))
+    controller.ghostQueueIndex = 0
+
     return controller
   }
 
@@ -44,13 +61,10 @@ class VoxelGrid {
   }
 
   _newVoxel(controller) {
-    if (controller.voxel) {
-      controller.voxel.drop()
-    }
-    var voxel = new Voxel(controller, this.gridSize)
+    var voxel = new Voxel(this.gridSize, false)
     this.voxels.push(voxel)
+    voxel.setPosition(controller.selectedPosition)
     this.container.add(voxel.object3D)
-    controller.voxel = voxel
   }
 
   update() {
@@ -59,7 +73,22 @@ class VoxelGrid {
   }
 
   _updateController(controller) {
-    controller.voxel.update()
+    controller.previousSelectedPosition.copy(controller.selectedPosition)
+    this.snapVec(controller.selectedPosition.setFromMatrixPosition(controller.cursor.matrixWorld))
+    if (!controller.previousSelectedPosition.equals(controller.selectedPosition)) {
+      this._newSpot(controller)
+    }
+    // controller.voxel.update(controller.selectedPosition)
+  }
+
+  _newSpot(controller) {
+    controller.ghostQueue.forEach((ghost) => ghost.disappear())
+    var nextGhost = controller.ghostQueue[controller.ghostQueueIndex++ % controller.ghostQueue.length]
+    nextGhost.setPosition(controller.selectedPosition)
+    nextGhost.appear()
+    if (controller.triggerClicked) {
+      this._newVoxel(controller)
+    }
   }
 
   _startStretching(e) {
@@ -79,11 +108,16 @@ class VoxelGrid {
   }
 
   _endStretching() {
-    console.log("Ok i'll end")
   }
 
   snap(v) {
     return Math.round(v / this.gridSize) * this.gridSize
+  }
+
+  snapVec(vector) {
+    vector.x = this.snap(vector.x)
+    vector.y = this.snap(vector.y)
+    vector.z = this.snap(vector.z)
   }
 }
 

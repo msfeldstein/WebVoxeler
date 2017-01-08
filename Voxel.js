@@ -1,41 +1,46 @@
-var GRID_SIZE = .2
-
-const geometry = new THREE.BoxBufferGeometry(GRID_SIZE, GRID_SIZE, GRID_SIZE)
-const material = new THREE.MeshLambertMaterial({
-  wireframe: true,
+const ghostMaterial = new THREE.MeshLambertMaterial({
+  transparent: true,
   opacity: 0.4
 })
-const droppedMaterial = new THREE.MeshLambertMaterial({
+const flatMaterial = new THREE.MeshLambertMaterial({
   wireframe: false,
   opacity: 1
 })
-var Voxel = function(controller, size) {
-  this.cube = new THREE.Mesh(
-    geometry,
-    material
-  )
 
-  this.controller = controller
-  this.noRotation = new THREE.Matrix4()
-  this.object3D = new THREE.Object3D()
-  this.object3D.add(this.cube)
+class Voxel {
+  constructor(size, isGhost) {
+    this.cube = new THREE.Mesh(
+      Voxel.geometryForSize(size),
+      isGhost ? ghostMaterial.clone() : flatMaterial
+    )
+
+    this.object3D = new THREE.Object3D()
+    this.object3D.add(this.cube)
+    this.fade = new TWEEN.Tween(this.cube.material)
+  }
+
+  setPosition(p) {
+    this.object3D.position.copy(p)
+  }
+
+  disappear() {
+    if (this.fade) this.fade.stop()
+    this.fade.to({opacity: 0}, 200)
+    this.fade.start()
+  }
+
+  appear() {
+    if (this.fade) this.fade.stop()
+    this.cube.material.opacity = 0.4
+  }
 }
 
-Voxel.prototype.update = function() {
-  var forward = new THREE.Vector3(0, 0, -.3)
-  forward.applyQuaternion(this.controller.quaternion)
-  this.object3D.position.copy(this.controller.position)
-  this.object3D.position.add(forward)
-  this.object3D.position.x = this.snap(this.object3D.position.x)
-  this.object3D.position.y = this.snap(this.object3D.position.y)
-  this.object3D.position.z = this.snap(this.object3D.position.z) - .2
+Voxel.geometryCache = {}
+
+Voxel.geometryForSize = function(size) {
+  if (Voxel.geometryCache[size]) return Voxel.geometryCache[size]
+  Voxel.geometryCache[size] = new THREE.BoxBufferGeometry(size, size, size)
+  return Voxel.geometryCache[size]
 }
 
-Voxel.prototype.drop = function() {
-  this.cube.material = droppedMaterial
-}
-
-Voxel.prototype.snap = function(v) {
-  return Math.round(v / GRID_SIZE) * GRID_SIZE
-}
 module.exports = Voxel
