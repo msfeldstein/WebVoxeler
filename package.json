@@ -12,6 +12,7 @@
   "dependencies": {
     "@msfeldstein/full-screen-canvas": "^1.0.1",
     "budo": "^9.4.1",
+    "eventemitter3": "^2.0.2",
     "glslify": "^6.0.1",
     "three": "^0.83.0",
     "three-vive-controller": "^1.4.0"
