@@ -12,9 +12,9 @@ var fragmentShader = `
 
 module.exports = function(scene) {
   var plane = new THREE.Mesh(
-    new THREE.PlaneBufferGeometry(220, 220, 1, 1),
+    new THREE.PlaneBufferGeometry(10, 10, 1, 1),
     new THREE.MeshPhongMaterial({
-      color: 'blue'
+      color: 0xaeaeae
     })
   )
   plane.rotation.x = -Math.PI / 2
