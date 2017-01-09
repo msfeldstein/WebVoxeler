@@ -15,6 +15,7 @@
     "eventemitter3": "^2.0.2",
     "glslify": "^6.0.1",
     "three": "^0.83.0",
+    "three-orbit-controls": "^82.1.0",
     "three-vive-controller": "^1.4.0",
     "tween.js": "^16.3.5"
   }

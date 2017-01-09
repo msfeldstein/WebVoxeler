@@ -10,6 +10,7 @@ class VoxelGrid {
     this.scene.add(this.pivot)
     this.gridSize = params.gridSize
     this.voxels = []
+    this.voxelStore = {}
     this.controllers = params.controllers
     this.leftController = this._setupController(params.controllers[0])
     this.rightController = this._setupController(params.controllers[1])
@@ -26,6 +27,15 @@ class VoxelGrid {
     this.stretchGesture.on(
       this.stretchGesture.OnEnd, this._endStretching.bind(this)
     )
+
+
+    var v = this._newVoxel({
+      selectedPosition: new THREE.Vector3(0, 0, 0)
+    })
+
+    setTimeout(function() {
+      v.destroy()
+    }, 2000)
   }
 
   _setupController(controller) {
@@ -57,7 +67,13 @@ class VoxelGrid {
   }
 
   _clicked(controller) {
-    this._newVoxel(controller)
+    var existing = this.voxelStore[this.hashVec(controller.selectedPosition)]
+    if (existing) {
+      this.destroyVoxel(existing)
+    } else {
+      this._newVoxel(controller)
+    }
+
   }
 
   _newVoxel(controller) {
@@ -65,6 +81,8 @@ class VoxelGrid {
     this.voxels.push(voxel)
     voxel.setPosition(controller.selectedPosition)
     this.container.add(voxel.object3D)
+    this.voxelStore[this.hashVec(controller.selectedPosition)] = voxel
+    return voxel
   }
 
   update() {
@@ -118,6 +136,10 @@ class VoxelGrid {
     vector.x = this.snap(vector.x)
     vector.y = this.snap(vector.y)
     vector.z = this.snap(vector.z)
+  }
+
+  hashVec(vector) {
+    return `${vector.x}-${vector.y}-${vector.z}`
   }
 }
 

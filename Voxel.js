@@ -33,6 +33,13 @@ class Voxel {
     if (this.fade) this.fade.stop()
     this.cube.material.opacity = 0.4
   }
+
+  destroy() {
+    new TWEEN.Tween(this.cube.scale)
+      .to({x: 0, y: 0, z: 0}, 130)
+      .onComplete(() => this.object3D.parent.remove(this.object3D))
+      .start()
+  }
 }
 
 Voxel.geometryCache = {}
